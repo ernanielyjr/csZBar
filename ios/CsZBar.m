@@ -30,7 +30,7 @@
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return YES;
+    return NO;
 }
 
 #pragma mark - Plugin API
@@ -86,18 +86,66 @@
         CGFloat screenWidth = screenRect.size.width;
         CGFloat screenHeight = screenRect.size.height;
         
-        BOOL drawSight = [params objectForKey:@"drawSight"] ? [[params objectForKey:@"drawSight"] boolValue] : true;
-        UIToolbar *toolbarViewFlash = [[UIToolbar alloc] init];
+        UILabel *textTitleLabel =[[UILabel alloc] initWithFrame:CGRectMake(10, 10, screenWidth - 20, 20)];
+        [textTitleLabel setText:[params objectForKey:@"text_title"]];
+        [textTitleLabel setTextAlignment:NSTextAlignmentCenter];
+        [textTitleLabel setLineBreakMode:NSLineBreakByWordWrapping];
+        [textTitleLabel setTextColor:[UIColor whiteColor]];
+        [textTitleLabel setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.2]];
+        [textTitleLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:24]];
+        [textTitleLabel setNumberOfLines:0];
+        [textTitleLabel sizeToFit];
+        int x = (screenWidth - textTitleLabel.frame.size.width) / 2;
+        textTitleLabel.frame = CGRectMake(x, 10, textTitleLabel.frame.size.width, textTitleLabel.frame.size.height);
         
-        //The bar length it depends on the orientation
-        toolbarViewFlash.frame = CGRectMake(0.0, 0, (screenWidth > screenHeight ?screenWidth:screenHeight), 44.0);
-        toolbarViewFlash.barStyle = UIBarStyleBlackOpaque;
-        UIBarButtonItem *buttonFlash = [[UIBarButtonItem alloc] initWithTitle:@"Flash" style:UIBarButtonItemStyleDone target:self action:@selector(toggleflash)];
+        int buttonsWidth = 80;
+        int buttonsHeight = 30;
         
-        NSArray *buttons = [NSArray arrayWithObjects: buttonFlash, nil];
-        [toolbarViewFlash setItems:buttons animated:NO];
-        [self.scanReader.view addSubview:toolbarViewFlash];
+        UIView *superv  = [[[infoButton superview]superview]superview];
 
+        [superv.subviews.firstObject setFrame:CGRectMake(0, 0, screenWidth, screenHeight - buttonsHeight - 20)]; // reposiciona o painel da camera
+        [superv.subviews.lastObject removeFromSuperview]; //remove a barra dos botoes nativos da camera
+
+        UIView *newBar = [[UIView alloc]initWithFrame:CGRectMake(0,
+                                               screenHeight - buttonsHeight - 20,
+                                               screenWidth,
+                                                buttonsHeight + 20)];
+        [newBar setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.8]];
+        [superv addSubview:newBar];
+
+        UILabel *textInstructionsLabel =[[UILabel alloc] initWithFrame:CGRectMake(10, 10, screenWidth - 20, 20)];
+        [textInstructionsLabel setText:[params objectForKey:@"text_instructions"]];
+        [textInstructionsLabel setTextAlignment:NSTextAlignmentCenter];
+        [textInstructionsLabel setLineBreakMode:NSLineBreakByWordWrapping];
+        [textInstructionsLabel setTextColor:[UIColor whiteColor]];
+        [textInstructionsLabel setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.2]];
+        [textInstructionsLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:16]];
+        [textInstructionsLabel setNumberOfLines:0];
+        [textInstructionsLabel sizeToFit];
+        x = (screenWidth - textInstructionsLabel.frame.size.width) / 2;
+        int y = screenHeight - newBar.frame.size.height - textInstructionsLabel.frame.size.height - 10;
+        textInstructionsLabel.frame = CGRectMake(x, y, textInstructionsLabel.frame.size.width, textInstructionsLabel.frame.size.height);
+        
+        UIButton *buttonFlash = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [buttonFlash addTarget:self action:@selector(toggleflash) forControlEvents:UIControlEventTouchUpInside];
+        [buttonFlash setTitle:@"Flash" forState:UIControlStateNormal];
+        [buttonFlash setFrame:CGRectMake(screenWidth - buttonsWidth - 10,
+                                         (newBar.frame.size.height - buttonsHeight) / 2,
+                                         buttonsWidth,
+                                         buttonsHeight)];
+        [newBar addSubview:buttonFlash];
+
+        UIButton *buttonCancel = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [buttonCancel addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchUpInside];
+        [buttonCancel setTitle:@"Cancelar" forState:UIControlStateNormal];
+        [buttonCancel setFrame:CGRectMake(10,
+                                         (newBar.frame.size.height - buttonsHeight) / 2,
+                                         buttonsWidth,
+                                         buttonsHeight)];
+        [newBar addSubview:buttonCancel];
+        
+        BOOL drawSight = [params objectForKey:@"drawSight"] ? [[params objectForKey:@"drawSight"] boolValue] : true;
+        
         if (drawSight) {
             CGFloat dim = screenWidth < screenHeight ? screenWidth / 1.1 : screenHeight / 1.1;
             UIView *polygonView = [[UIView alloc] initWithFrame: CGRectMake  ( (screenWidth/2) - (dim/2), (screenHeight/2) - (dim/2), dim, dim)];
@@ -108,6 +156,9 @@
 
             self.scanReader.cameraOverlayView = polygonView;
         }
+
+        [self.scanReader.cameraOverlayView.superview addSubview:textTitleLabel];
+        [self.scanReader.cameraOverlayView.superview addSubview:textInstructionsLabel];
 
         [self.viewController presentViewController:self.scanReader animated:YES completion:nil];
     }
@@ -128,6 +179,16 @@
     }
     
     [device unlockForConfiguration];
+    
+}
+
+- (void)cancel {
+    [self.scanReader dismissViewControllerAnimated: YES completion: ^(void) {
+        self.scanInProgress = NO;
+        [self sendScanResult: [CDVPluginResult
+                               resultWithStatus: CDVCommandStatus_ERROR
+                               messageAsString: @"cancelled"]];
+    }];
 }
 
 #pragma mark - Helpers
