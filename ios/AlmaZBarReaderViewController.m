@@ -30,7 +30,7 @@
 //Techedge Changes NSS fase 2
 - (void)buttonPressed: (UIButton *) button {
     CsZBar *obj = [[CsZBar alloc] init];
-    
+
     [obj toggleflash];
 }
 
@@ -39,7 +39,7 @@
 }
 
 - (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation) fromInterfaceOrientation {
-    return NO;
+    //
 }
 
 @end
