@@ -35,7 +35,7 @@
 
 #pragma mark - Plugin API
 
-- (void)scan: (CDVInvokedUrlCommand*)command; 
+- (void)scan: (CDVInvokedUrlCommand*)command;
 {
     if (self.scanInProgress) {
         [self.commandDelegate
@@ -62,7 +62,7 @@
         self.scanReader.cameraFlashMode = UIImagePickerControllerCameraFlashModeOn;
 
         NSString *flash = [params objectForKey:@"flash"];
-        
+
         if ([flash isEqualToString:@"on"]) {
             self.scanReader.cameraFlashMode = UIImagePickerControllerCameraFlashModeOn;
         } else if ([flash isEqualToString:@"off"]) {
@@ -85,22 +85,22 @@
         CGRect screenRect = [[UIScreen mainScreen] bounds];
         CGFloat screenWidth = screenRect.size.width;
         CGFloat screenHeight = screenRect.size.height;
-        
+
         UILabel *textTitleLabel =[[UILabel alloc] initWithFrame:CGRectMake(10, 10, screenWidth - 20, 20)];
         [textTitleLabel setText:[params objectForKey:@"text_title"]];
         [textTitleLabel setTextAlignment:NSTextAlignmentCenter];
         [textTitleLabel setLineBreakMode:NSLineBreakByWordWrapping];
         [textTitleLabel setTextColor:[UIColor whiteColor]];
-        [textTitleLabel setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.2]];
+        [textTitleLabel setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.2]];
         [textTitleLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:24]];
         [textTitleLabel setNumberOfLines:0];
         [textTitleLabel sizeToFit];
         int x = (screenWidth - textTitleLabel.frame.size.width) / 2;
         textTitleLabel.frame = CGRectMake(x, 10, textTitleLabel.frame.size.width, textTitleLabel.frame.size.height);
-        
+
         int buttonsWidth = 80;
         int buttonsHeight = 30;
-        
+
         UIView *superv  = [[[infoButton superview]superview]superview];
 
         [superv.subviews.firstObject setFrame:CGRectMake(0, 0, screenWidth, screenHeight - buttonsHeight - 20)]; // reposiciona o painel da camera
@@ -110,7 +110,7 @@
                                                screenHeight - buttonsHeight - 20,
                                                screenWidth,
                                                 buttonsHeight + 20)];
-        [newBar setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.8]];
+        [newBar setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.8]];
         [superv addSubview:newBar];
 
         UILabel *textInstructionsLabel =[[UILabel alloc] initWithFrame:CGRectMake(10, 10, screenWidth - 20, 20)];
@@ -118,14 +118,14 @@
         [textInstructionsLabel setTextAlignment:NSTextAlignmentCenter];
         [textInstructionsLabel setLineBreakMode:NSLineBreakByWordWrapping];
         [textInstructionsLabel setTextColor:[UIColor whiteColor]];
-        [textInstructionsLabel setBackgroundColor:[UIColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:0.2]];
+        [textInstructionsLabel setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.2]];
         [textInstructionsLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:16]];
         [textInstructionsLabel setNumberOfLines:0];
         [textInstructionsLabel sizeToFit];
         x = (screenWidth - textInstructionsLabel.frame.size.width) / 2;
         int y = screenHeight - newBar.frame.size.height - textInstructionsLabel.frame.size.height - 10;
         textInstructionsLabel.frame = CGRectMake(x, y, textInstructionsLabel.frame.size.width, textInstructionsLabel.frame.size.height);
-        
+
         UIButton *buttonFlash = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         [buttonFlash addTarget:self action:@selector(toggleflash) forControlEvents:UIControlEventTouchUpInside];
         [buttonFlash setTitle:@"Flash" forState:UIControlStateNormal];
@@ -143,13 +143,13 @@
                                          buttonsWidth,
                                          buttonsHeight)];
         [newBar addSubview:buttonCancel];
-        
+
         BOOL drawSight = [params objectForKey:@"drawSight"] ? [[params objectForKey:@"drawSight"] boolValue] : true;
-        
+
         if (drawSight) {
             CGFloat dim = screenWidth < screenHeight ? screenWidth / 1.1 : screenHeight / 1.1;
             UIView *polygonView = [[UIView alloc] initWithFrame: CGRectMake  ( (screenWidth/2) - (dim/2), (screenHeight/2) - (dim/2), dim, dim)];
-            
+
             UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0,dim / 2, dim, 1)];
             lineView.backgroundColor = [UIColor redColor];
             [polygonView addSubview:lineView];
@@ -166,7 +166,7 @@
 
 - (void)toggleflash {
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    
+
     [device lockForConfiguration:nil];
     if (device.torchAvailable == 1) {
         if (device.torchMode == 0) {
@@ -177,9 +177,9 @@
             [device setFlashMode:AVCaptureFlashModeOff];
         }
     }
-    
+
     [device unlockForConfiguration];
-    
+
 }
 
 - (void)cancel {
@@ -207,9 +207,9 @@
     if ([self.scanReader isBeingDismissed]) {
         return;
     }
-    
+
     id<NSFastEnumeration> results = [info objectForKey: ZBarReaderControllerResults];
-    
+
     ZBarSymbol *symbol = nil;
     for (symbol in results) break; // get the first result
 
